@@ -66,22 +66,21 @@ class NeuronNetwork:
 
     cut_row = 0 # number of input when train must equal test
     # train neuron network
-    def train(self, data_set, num_parameter, learningRate, alpha, hopCount):
+    def train(self, data_set, num_parameter, learningRate, alpha, e_cut, hopCount):
         self.cut_row = num_parameter
         E = 1
         count = 0
         data_row = 0
-        print("hop 0")
+        print("\nhop 0")
         print("===============================================================================================")
-        while E >= math.pow(10, -6) and count <= hopCount:
-            print("E is {}".format(E))
-            print("Progress  {}%".format(round((100*data_row)/len(data_set), 2)))
+        while E >= e_cut and count <= hopCount:
+            print("\nProgress  {}%".format(round((100*data_row)/len(data_set), 2)))
             # set input
             if data_row == len(data_set):
                 data_row = 0
                 count += 1
-                print("hop {}".format(count))
-                print("===============================================================================================")
+                # print("hop {}".format(count))
+                # print("===============================================================================================")
             for data_col in range(0, num_parameter):
                 self.layer[0][data_col] = data_set[data_row][data_col]
 
@@ -127,16 +126,17 @@ class NeuronNetwork:
                     self.bias[cur_layer][cur_node] += learningRate * self.gradient[cur_layer][cur_node] * 1
 
             data_row += 1
+            # print("E is {}".format(E))
         return
 
     # test neuron network
-    def test(self, data_set):
+    def test_classification(self, data_set):
         result = 0
         for cur_row in range(0, len(data_set)):
             for data_col in range(0, self.cut_row):
                 self.layer[0][data_col] = data_set[cur_row][data_col]
 
-            for cur_layer in range(1, len(self.layer)): # except layer 0 input layer
+            for cur_layer in range(1, len(self.layer)):  # except layer 0 input layer
                 for cur_node in range(0, len(self.layer[cur_layer])):
                     v = numpy.dot(self.layer[cur_layer - 1], self.weight[cur_layer - 1][cur_node])
                     v += self.bias[cur_layer - 1][cur_node]
@@ -158,4 +158,26 @@ class NeuronNetwork:
                 result += 1
 
         print("accuracy is {}".format(result * 100 / len(data_set)))
+        return
 
+    # this function use structure output node is 1
+    def test_mean_square_error(self, data_set):
+        result = 0
+        for cur_row in range(0, len(data_set)):
+            for data_col in range(0, self.cut_row):
+                self.layer[0][data_col] = data_set[cur_row][data_col]
+
+            for cur_layer in range(1, len(self.layer)):  # except layer 0 input layer
+                for cur_node in range(0, len(self.layer[cur_layer])):
+                    v = numpy.dot(self.layer[cur_layer - 1], self.weight[cur_layer - 1][cur_node])
+                    v += self.bias[cur_layer - 1][cur_node]
+                    self.layer[cur_layer][cur_node] = self.activation_func(v)
+
+            print("\n")
+            # print("output: {}".format(self.layer[len(self.layer) - 1][0]))
+            design_output = data_set[cur_row][len(data_set[cur_row]) - 1]
+            print("design output: {}".format(design_output))
+            result += math.sqrt(math.pow(design_output - self.layer[len(self.layer) - 1][0], 2))
+        result = result/len(data_set)
+        # print("\nmean square error is {}".format(result))
+        return result

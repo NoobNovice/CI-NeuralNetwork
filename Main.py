@@ -1,20 +1,20 @@
 from NeuronNetwork import *
-from ReadFile import *
+from ReadExcelFile import *
+import copy
+import numpy
 
-# test read data
-file_data = ReadFile()
-file_data.excel("iris.xls")
-file_data.cut_data(10)
-print(len(file_data.train_data))
-print(len(file_data.test_data))
+file_data = ReadExcelFile("flood.xls")
+file_data.ten_fold_data()
 
-arr = [[1, 1, 0, 1]]
-# test neuron network
-model = NeuronNetwork(4, 3, [3, 2])
-model.set_value()
-temp_weight = copy.deepcopy(model.weight)
-temp_bias = copy.deepcopy(model.bias)
-print(model.bias)
-model.train(file_data.train_data, 4, 0.2, 0.001, 50000)
-model.test(file_data.test_data)
+result_file = open("CrossValidateResult.txt", "w")
+model = NeuronNetwork(8, 1, [7, 6, 5, 4, 3, 2])
+# 10 cross validation
+for i in range(0, 10):
+    fold_data = copy.deepcopy(file_data.fold_data)
+    test_data = fold_data.pop(i)
+    train_data = numpy.concatenate(fold_data)
+    model.set_value()
+    model.train(train_data, 8, 0.2, 0.001, pow(10, -7), 1000)
+    result_file.write("fold {} is {}\n".format(i + 1, round(model.test_mean_square_error(test_data), 3)))
+
 
