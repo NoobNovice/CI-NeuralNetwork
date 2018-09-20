@@ -41,11 +41,6 @@ class ReadExcelFile:
             if temp < 1:
                 break
 
-        # transform date
-        for cur_row in range(0, len(self.table_data)):
-            for cur_col in range(0, len(self.table_data[cur_row])):
-                self.table_data[cur_row][cur_col] = self.decimal_scaling(self.table_data[cur_row][cur_col])
-
         # random data
         for i in range(0, len(self.table_data)):
             rand = random.randrange(0, len(self.table_data) - 1)
@@ -66,11 +61,21 @@ class ReadExcelFile:
         self.fold_data.append(self.table_data)
         return
 
-    def minmax_normalize(self, v, new_min, new_max):
-        return (v - self.min)/(self.max - self.min)*(new_max - new_min) + new_min
+    def minmax_normalize(self, new_min, new_max):
+        for cur_row in range(0, len(self.table_data)):
+            for cur_col in range(0, len(self.table_data[cur_row])):
+                temp = (self.table_data[cur_row][cur_col] - self.min) / (self.max - self.min) * (new_max - new_min)
+                self.table_data[cur_row][cur_col] = temp + new_min
+        return
 
-    def z_score(self, v):
-        return (v - self.mean)/self.SD
+    def z_score(self):
+        for cur_row in range(0, len(self.table_data)):
+            for cur_col in range(0, len(self.table_data[cur_row])):
+                self.table_data[cur_row][cur_col] = (self.table_data[cur_row][cur_col] - self.mean)/self.SD
+        return
 
-    def decimal_scaling(self, v):
-        return v/math.pow(10, self.j)
+    def decimal_scaling(self):
+        for cur_row in range(0, len(self.table_data)):
+            for cur_col in range(0, len(self.table_data[cur_row])):
+                self.table_data[cur_row][cur_col] = self.table_data[cur_row][cur_col]/math.pow(10, self.j)
+        return

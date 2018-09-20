@@ -71,16 +71,12 @@ class NeuronNetwork:
         E = 1
         count = 0
         data_row = 0
-        print("\nhop 0")
-        print("===============================================================================================")
         while E >= e_cut and count <= hopCount:
             print("\nProgress  {}%".format(round((100*data_row)/len(data_set), 2)))
             # set input
             if data_row == len(data_set):
                 data_row = 0
                 count += 1
-                # print("hop {}".format(count))
-                # print("===============================================================================================")
             for data_col in range(0, num_parameter):
                 self.layer[0][data_col] = data_set[data_row][data_col]
 
@@ -126,12 +122,17 @@ class NeuronNetwork:
                     self.bias[cur_layer][cur_node] += learningRate * self.gradient[cur_layer][cur_node] * 1
 
             data_row += 1
-            # print("E is {}".format(E))
-        return
+        return count
 
+    count_test = 0
     # test neuron network
     def test_classification(self, data_set):
         result = 0
+        confusion_matrix = []
+        for i in range(len(self.layer[-1])):
+            confusion_matrix.append(innit_array(2))  # design output 1 or 0
+        self.count_test += 1
+        report = open("ConfusionMatrix{}.txt".format(self.count_test),  "w")
         for cur_row in range(0, len(data_set)):
             for data_col in range(0, self.cut_row):
                 self.layer[0][data_col] = data_set[cur_row][data_col]
@@ -142,23 +143,28 @@ class NeuronNetwork:
                     v += self.bias[cur_layer - 1][cur_node]
                     self.layer[cur_layer][cur_node] = self.activation_func(v)
 
-            print("\n")
-            print(self.layer[len(self.layer) - 1])
             for cur_output in range(0, len(self.layer[len(self.layer) - 1])):
                 if self.layer[len(self.layer) - 1][cur_output] > 0.5:
                     self.layer[len(self.layer) - 1][cur_output] = 1
                 else:
                     self.layer[len(self.layer) - 1][cur_output] = 0
-            print(self.layer[len(self.layer) - 1])
             design_output = []
             for data_col in range(self.cut_row, len(data_set[cur_row])):
                 design_output.append(data_set[cur_row][data_col])
-            print(design_output)
             if numpy.array_equal(design_output, self.layer[len(self.layer) - 1]):
                 result += 1
 
-        print("accuracy is {}".format(result * 100 / len(data_set)))
-        return
+            # confusion matrix update
+            for i in range(len(confusion_matrix)):
+                if self.layer[-1][i] == 1:
+                    confusion_matrix[i][0] += 1
+                else:
+                    confusion_matrix[i][1] += 1
+
+        result = round(result * 100 / len(data_set), 2)
+        for i in range(len(confusion_matrix)):
+            report.write("node_output{},{},{}\n".format(i, confusion_matrix[i][0], confusion_matrix[i][1]))
+        return result
 
     # this function use structure output node is 1
     def test_mean_square_error(self, data_set):
@@ -173,11 +179,7 @@ class NeuronNetwork:
                     v += self.bias[cur_layer - 1][cur_node]
                     self.layer[cur_layer][cur_node] = self.activation_func(v)
 
-            print("\n")
-            # print("output: {}".format(self.layer[len(self.layer) - 1][0]))
             design_output = data_set[cur_row][len(data_set[cur_row]) - 1]
-            print("design output: {}".format(design_output))
             result += math.sqrt(math.pow(design_output - self.layer[len(self.layer) - 1][0], 2))
         result = result/len(data_set)
-        # print("\nmean square error is {}".format(result))
         return result

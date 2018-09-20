@@ -1,0 +1,2 @@
+node_output0,10,10
+node_output1,10,10
