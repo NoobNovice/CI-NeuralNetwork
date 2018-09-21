@@ -13,6 +13,8 @@ class NeuronNetwork:
     past_weight = []
     gradient = []
     bias = []
+    count_test = 0
+    report = open("ConfusionMatrixReport.txt", "w")
     def __init__(self, num_inputNode, num_outputNode, arr_hiddenNode):
         # append input node layer
         self.layer.append(innit_array(num_inputNode))
@@ -124,7 +126,6 @@ class NeuronNetwork:
             data_row += 1
         return count
 
-    count_test = 0
     # test neuron network
     def test_classification(self, data_set):
         result = 0
@@ -132,7 +133,7 @@ class NeuronNetwork:
         for i in range(len(self.layer[-1])):
             confusion_matrix.append(innit_array(2))  # design output 1 or 0
         self.count_test += 1
-        report = open("ConfusionMatrix{}.txt".format(self.count_test),  "w")
+        self.report.write("fold {}\n".format(self.count_test))
         for cur_row in range(0, len(data_set)):
             for data_col in range(0, self.cut_row):
                 self.layer[0][data_col] = data_set[cur_row][data_col]
@@ -163,7 +164,8 @@ class NeuronNetwork:
 
         result = round(result * 100 / len(data_set), 2)
         for i in range(len(confusion_matrix)):
-            report.write("node_output{},{},{}\n".format(i, confusion_matrix[i][0], confusion_matrix[i][1]))
+            self.report.write("node_output{},{},{}\n".format(i, confusion_matrix[i][0], confusion_matrix[i][1]))
+        self.report.write("\n")
         return result
 
     # this function use structure output node is 1

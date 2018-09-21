@@ -1,2 +1,0 @@
-node_output0,6,14
-node_output1,14,6

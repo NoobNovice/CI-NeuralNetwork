@@ -32,8 +32,7 @@ for i in range(0, 10):
     test_data = fold_data.pop(i)
     train_data = numpy.concatenate(fold_data)
     model.set_value()
-    # roundRun.append(model.train(train_data, 2, 0.2, 0.25, pow(10, -6), 5000))
-    roundRun.append(model.train(train_data, 2, 0.2, 0.25, pow(10, -4), 5000))
+    roundRun.append(model.train(train_data, 2, 0.15, 0.25, pow(10, -6), 5000))
     result_file.write("fold {} is {}\n".format(i + 1, model.test_classification(test_data)))
 print(roundRun)
 
