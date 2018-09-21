@@ -14,8 +14,12 @@ class NeuronNetwork:
     gradient = []
     bias = []
     count_test = 0
-    report = open("ConfusionMatrixReport.txt", "w")
-    def __init__(self, num_inputNode, num_outputNode, arr_hiddenNode):
+    report = None
+    def __init__(self, num_inputNode, num_outputNode, arr_hiddenNode, type_module):
+        if type_module == "c":
+            self.report = open("ConfusionMatrixReport.txt", "w")
+        if type_module == "p":
+            self.report = open("PredictionErrorReport.txt", "w")
         # append input node layer
         self.layer.append(innit_array(num_inputNode))
 
@@ -66,15 +70,14 @@ class NeuronNetwork:
         y_diff = y * (1 - y)
         return y_diff
 
-    cut_row = 0 # number of input when train must equal test
+    cut_row = 0  # number of input when train must equal test (use in test function)
     # train neuron network
     def train(self, data_set, num_parameter, learningRate, alpha, e_cut, hopCount):
         self.cut_row = num_parameter
         E = 1
         count = 0
         data_row = 0
-        while E >= e_cut and count <= hopCount:
-            print("\nProgress  {}%".format(round((100*data_row)/len(data_set), 2)))
+        while E > e_cut and count <= hopCount:
             # set input
             if data_row == len(data_set):
                 data_row = 0
@@ -171,6 +174,9 @@ class NeuronNetwork:
     # this function use structure output node is 1
     def test_mean_square_error(self, data_set):
         result = 0
+        self.count_test += 1
+        self.report.write("fold {}\n".format(self.count_test))
+        self.report.write("design output,prediction output\n")
         for cur_row in range(0, len(data_set)):
             for data_col in range(0, self.cut_row):
                 self.layer[0][data_col] = data_set[cur_row][data_col]
@@ -180,8 +186,9 @@ class NeuronNetwork:
                     v = numpy.dot(self.layer[cur_layer - 1], self.weight[cur_layer - 1][cur_node])
                     v += self.bias[cur_layer - 1][cur_node]
                     self.layer[cur_layer][cur_node] = self.activation_func(v)
-
             design_output = data_set[cur_row][len(data_set[cur_row]) - 1]
             result += math.sqrt(math.pow(design_output - self.layer[len(self.layer) - 1][0], 2))
+            self.report.write("{},{}\n".format(design_output, self.layer[len(self.layer) - 1][0]))
+        self.report.write("\n")
         result = result/len(data_set)
         return result
